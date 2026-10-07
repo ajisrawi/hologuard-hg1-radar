@@ -1,0 +1,41 @@
+board,refdes,qty,part,manufacturer,function,status_note
+ANT,U10-U15,6,HRX-8 (custom),SiGe BiCMOS (e.g. GF 8XP / IHP SG13S),8-ch Ku RX: LNA NF 2.5 dB + IQ mixer + IF VGA/AAF; 75 mW/ch,CUSTOM ASIC - gen-0 brassboard alternative: HMC903 LNA + HMC8191-class IQ mixer per channel (~0.6 W/ch)
+ANT,U20-U25,6,AD9083BBCZ,Analog Devices,16-ch 125 MHz CTSD ADC + DDC + JESD204B (8 IQ RX per device),COTS
+ANT,U60-U65,6,Ku GaN-on-SiC PA 1 W (QGaN15),Qorvo (TGA2958-SM class) / foundry die,TX PA 30 dBm; 28 V drain; PAE >= 30 %,VERIFY: TGA2958-SM is EOL - pick successor or QGaN15 die-in-QFN
+ANT,U50-U51,2,ADAR1000,Analog Devices,4-ch X/Ku TX beamformer: DDMA slow-time phase codes + coherent spotlight,COTS - characterise 16.0-16.5 GHz (spec 8-16 GHz)
+ANT,U1;U3,2,ADF4159,Analog Devices,13 GHz fractional-N FMCW ramp PLL (TX chirp / RX LO chirp with programmable offset),COTS
+ANT,U2;U4,2,HMC733LC4B,Analog Devices,10-20 GHz VCO (Fo/2 to PLL),COTS
+ANT,U5;U8,2,HMC903LP3E,Analog Devices,6-17 GHz amp: LO distribution (+14 dBm) / TX drive,COTS
+ANT,U9,1,HMC7044,Analog Devices,JESD204B device clock + SYSREF to 6 ADCs + FPGA,COTS
+ANT,Y1,1,100 MHz OCXO,e.g. Rakon / Abracon,reference; -165 dBc/Hz floor,COTS
+ANT,U30-U35,6,LT3045,Analog Devices,ultra-low-noise LDO per RFIC,COTS
+ANT,U40-U45,6,ADP7159,Analog Devices,ultra-low-noise LDO per ADC,COTS
+ANT,AE1,1,GNSS L1/L5 ceramic patch 18x18,Taoglas CGGP.18 class,GNSS timing / position,COTS
+ANT,J2;J3,2,LSHM-150-xx.x-L-DV-A-N,Samtec,JESD204B 24 lanes to DSP (10 mm stack),COTS
+ANT,J4,1,LSHM-120-xx.x-L-DV-A-N,Samtec,SPI / SYNC / GNSS RF / RID RF / CAL,COTS
+ANT,J1,1,43650-0400,Molex,+28 V PA / +5 V from PWR,COTS
+ANT,PCB,1,HG1-ANT 10L hybrid 150x190x2.1 mm,,RO4003C + RO4450F + 370HR + RO4350B; blind L1-L5 & L8-L10; ENEPIG; mask-free antenna face,
+DSP,U1,1,XCVE2302-1LSESFVA784,AMD,Versal AI Edge: JESD rx; range/Doppler FFT; DDMA demux; AIE-ML 3D beamforming; CFAR; tracker,COTS - verify GTYP lane count >= 24 (else VE2602)
+DSP,U2;U3,2,MT53E1G32D2FW,Micron,LPDDR4 32 Gb x32 (radar cube ping-pong),COTS
+DSP,U4,1,eMMC 64 GB pSLC,Micron / Kioxia,OS / logs / track history,COTS
+DSP,U5,1,MT25QU512,Micron,QSPI boot,COTS
+DSP,U6,1,DP83867IR,Texas Instruments,GbE PHY + IEEE 1588 PTP,COTS
+DSP,U7,1,STM32G474,ST,housekeeping / GaN gate-before-drain sequencing / BIT / thermal back-off,COTS
+DSP,U8,1,NEO-F10T,u-blox,GNSS timing L1/L5 1PPS,COTS
+DSP,U9,1,MDBT50Q (nRF52840),Raytac / Nordic,Bluetooth 5 LR + legacy Remote-ID receiver,COTS
+DSP,U10,1,nRF7002,Nordic,Wi-Fi 6 2.4/5 GHz Beacon/NAN Remote-ID receiver,COTS
+DSP,U11;U12,2,ISM330DHCX / LIS2MDL,ST,IMU + magnetometer (auto-level / heading aid),COTS
+DSP,U20;U21,2,TPS546D24A,Texas Instruments,40 A PMBus PoL: VCCINT / VCC_AIE 0.8 V,COTS
+DSP,U22,1,LT8640S,Analog Devices,1V1 / 1V8 / 3V3 rails,COTS
+PWR,J1,1,M12 A-coded 8-pin PCB rear-mount,Binder / Phoenix,12-36 VDC + RS-485 + 1PPS + discretes,COTS
+PWR,J2,1,M12 X-coded 8-pin PCB rear-mount,Phoenix / Harting,1000BASE-T / 2.5GBASE-T,COTS
+PWR,D1,1,SMCJ36CA,Littelfuse,TVS: MIL-STD-1275 / ISO 7637 transients,COTS
+PWR,U1,1,LT4363,Analog Devices,surge stopper + reverse-voltage protection,COTS
+PWR,U2;U5,2,LT8640S,Analog Devices,12 V DSP rail / 5 V RF rail,COTS
+PWR,U3,1,LT8390,Analog Devices,4-switch buck-boost 28 V GaN drain rail,COTS
+PWR,U4,1,LT3462,Analog Devices,-5 V GaN gate bias (sequenced before drain),COTS
+PWR,U6,1,THVD1450,Texas Instruments,RS-485 transceiver,COTS
+PWR,T1,1,HX1188NL class,Pulse,GbE magnetics,COTS
+MECH,-,1,Housing AlSi10Mg (A356-T6) die-cast + CNC,,finned rear; integral board bosses and shield frame contact,
+MECH,-,1,Radome PC/ABS 1.0 mm,,er ~2.8; tan d 0.006; UV-stabilised; 9.4 mm air gap to aperture,
+MECH,-,1,Gore PolyVent PE / M12 vent,W. L. Gore,IP67 pressure equalisation,COTS

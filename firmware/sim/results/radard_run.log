@@ -1,0 +1,26 @@
+HG-1 radard: profile=sim  48 RX x 6 TX (virtual 288)  128 chirps x 512 samples  dR=3.00 m  Rmax=1535 m  dV=0.91 m/s  Vamb=+-58.6 m/s
+frame   0  t= 0.00s  plots  2  tracks  0  proc  194.0 ms
+frame   1  t= 0.10s  plots  2  tracks  0  proc  193.5 ms
+frame   2  t= 0.20s  plots  2  tracks  2  proc  203.1 ms
+frame   3  t= 0.30s  plots  2  tracks  2  proc  192.9 ms  [spotlight]
+frame   4  t= 0.40s  plots  3  tracks  2  proc  223.6 ms  [spotlight]
+frame   5  t= 0.50s  plots  2  tracks  2  proc  194.4 ms  [spotlight]
+frame   6  t= 0.60s  plots  2  tracks  2  proc  192.8 ms  [spotlight]
+frame   7  t= 0.70s  plots  3  tracks  2  proc  196.7 ms  [spotlight]
+frame   8  t= 0.80s  plots  3  tracks  2  proc  197.8 ms  [spotlight]
+frame   9  t= 0.90s  plots  2  tracks  2  proc  192.6 ms  [spotlight]
+frame  10  t= 1.00s  plots  4  tracks  2  proc  200.2 ms  [spotlight]
+frame  11  t= 1.10s  plots  2  tracks  2  proc  199.2 ms  [spotlight]
+frame  12  t= 1.20s  plots  3  tracks  2  proc  198.9 ms  [spotlight]
+frame  13  t= 1.30s  plots  3  tracks  2  proc  199.7 ms  [spotlight]
+frame  14  t= 1.40s  plots  2  tracks  2  proc  193.5 ms  [spotlight]
+frame  15  t= 1.50s  plots  1  tracks  2  proc  191.2 ms  [spotlight]
+frame  16  t= 1.60s  plots  3  tracks  2  proc  199.9 ms  [spotlight]
+frame  17  t= 1.70s  plots  3  tracks  2  proc  204.2 ms  [spotlight]
+frame  18  t= 1.80s  plots  3  tracks  2  proc  198.1 ms  [spotlight]
+frame  19  t= 1.90s  plots  1  tracks  2  proc  193.4 ms  [spotlight]
+frame  20  t= 2.00s  plots  2  tracks  2  proc  192.6 ms  [spotlight]
+frame  21  t= 2.10s  plots  3  tracks  2  proc  196.7 ms  [spotlight]
+frame  22  t= 2.20s  plots  3  tracks  3  proc  199.2 ms  [spotlight]
+frame  23  t= 2.30s  plots  3  tracks  3  proc  195.7 ms  [spotlight]
+mean processing time per CPI: 197.7 ms

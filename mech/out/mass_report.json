@@ -1,0 +1,32 @@
+{
+  "mass_g": {
+    "housing": 521.5,
+    "radome": 41.2,
+    "radome_screws": 5.7,
+    "logo": 0.1,
+    "ant_pcb": 116.7,
+    "ant_copper": 1.4,
+    "gnss_patch": 5.1,
+    "iso_fence": 5.4,
+    "absorber": 0.2,
+    "shield_frame": 117.6,
+    "dsp_pcb": 66.6,
+    "versal": 2.9,
+    "tim_pad": 1.4,
+    "pwr_pcb": 13.0,
+    "connectors": 54.9,
+    "m12_plugs": 17.5,
+    "bracket": 286.2,
+    "bracket_hw": 67.1,
+    "pole": 1206.2
+  },
+  "pcb_component_adder_g": 68.7,
+  "radar_unit_mass_g": 1013.5,
+  "envelope_mm": [
+    163.0,
+    203.0,
+    57.0
+  ],
+  "housing_wetted_area_m2": 0.2212,
+  "interior_volume_cc": 1332.5
+}

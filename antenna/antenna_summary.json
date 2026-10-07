@@ -1,0 +1,62 @@
+{
+  "element": {
+    "polarisation": "linear horizontal (E-plane = azimuth)",
+    "type": "aperture-coupled stacked patch, H-slot (dogbone), stripline fed",
+    "f0_GHz": 16.0,
+    "band_GHz": [
+      15.5,
+      16.5
+    ],
+    "lambda0_mm": 18.737028625,
+    "pitch_mm": 9.0,
+    "pitch_over_lambda_at_fmax": 0.49534268136925574,
+    "single_patch_eeff": 3.130878196581056,
+    "driven_patch_LxW_mm": [
+      4.63,
+      5.0
+    ],
+    "parasitic_patch_LxW_mm": [
+      5.11,
+      5.6
+    ],
+    "slot": {
+      "length_mm": 3.3,
+      "width_mm": 0.3,
+      "end_arms_mm": [
+        1.2,
+        0.3
+      ]
+    },
+    "stub_beyond_slot_mm": 2.09,
+    "stripline_50ohm_width_mm": 0.141,
+    "stripline_ground_spacing_mm": 0.406,
+    "lambda_g_stripline_mm": 9.965658738187697,
+    "layer_heights_mm": {
+      "L1-L2 parasitic gap RO4003C": 0.813,
+      "L2-L3 driven RO4003C": 0.508,
+      "L3-L4 RO4003C": 0.203,
+      "L4-L5 RO4450F+RO4003C": 0.203
+    },
+    "embedded_pattern_model": "E-plane cos^0.9, H-plane cos^1.3 (power), 4.7 dBi RX / 5.5 dBi TX",
+    "target_bandwidth_vswr2": "15.1-16.9 GHz (11 %) incl. +/-60 deg az active-match"
+  },
+  "patterns": {
+    "beamwidth_az_deg": 5.75,
+    "beamwidth_el_deg": 11.0,
+    "psll_az_dB": -35.12070545637896,
+    "psll_el_dB": -30.145849428178423,
+    "grating_lobe_free_scan_deg_at_fmax": 90.0,
+    "n_beams_fft": [
+      32,
+      16
+    ],
+    "rx_coherent_gain_dBi": 21.512412373755872
+  },
+  "n_tx": 6,
+  "n_rx": 48,
+  "n_virtual": 288,
+  "virtual_aperture_mm": [
+    216.0,
+    108.0
+  ]
+}

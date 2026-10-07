@@ -1,0 +1,115 @@
+{
+  "n_rx": 48,
+  "n_tx": 6,
+  "n_virtual": 288,
+  "lambda_mm": 18.737028625,
+  "virtual_aperture_mm": [
+    216.0,
+    108.0
+  ],
+  "beamwidth_deg": [
+    5.196193684457332,
+    10.392387368914664
+  ],
+  "waveform": {
+    "range_resolution_m": 0.599584916,
+    "chirp_slope_MHz_per_us": 3.3333333333333335,
+    "prf_kHz": 12.500000000000002,
+    "instrumented_range_m": 2999.42354229,
+    "cpi_ms": 49.99999999999999,
+    "window_ms": 399.99999999999994,
+    "v_unambiguous_mps": 58.55321445312501,
+    "velocity_resolution_mps": 0.18737028625000002,
+    "ddma_subbands": 8,
+    "doppler_bins_per_cpi": 625,
+    "range_bins": 5002,
+    "data_rate_Gbps": 128.06400000000002,
+    "beamforming_TMACs": 0.5762304
+  },
+  "snr_required_db": {
+    "pd90": 7.074707357453538,
+    "pd50": 4.591798312243235
+  },
+  "ranges": [
+    {
+      "target": "Micro FPV / Mini-3 (-25 dBsm)",
+      "rcs_m2": 0.0031622776601683794,
+      "R_pd90_m": 925.8605530449944,
+      "R_pd50_m": 1068.115720855285,
+      "R_track_spotlight_m": 1449.0500748688469
+    },
+    {
+      "target": "Mavic-class (-20 dBsm)",
+      "rcs_m2": 0.01,
+      "R_pd90_m": 1234.654890680088,
+      "R_pd50_m": 1424.3552057911006,
+      "R_track_spotlight_m": 1932.3393311154764
+    },
+    {
+      "target": "Phantom 4 (-17 dBsm)",
+      "rcs_m2": 0.02,
+      "R_pd90_m": 1468.2603805696676,
+      "R_pd50_m": 1693.853345017942,
+      "R_track_spotlight_m": 2297.951681162124
+    },
+    {
+      "target": "Matrice 600 (-10 dBsm)",
+      "rcs_m2": 0.1,
+      "R_pd90_m": 2195.5613706002578,
+      "R_pd50_m": 2532.901535040067,
+      "R_track_spotlight_m": 3436.239245731036
+    },
+    {
+      "target": "Fixed-wing Grp 2 (-3 dBsm)",
+      "rcs_m2": 0.5,
+      "R_pd90_m": 3283.130019623488,
+      "R_pd50_m": 3787.5712233755225,
+      "R_track_spotlight_m": 5138.376168088431
+    },
+    {
+      "target": "Walking human (0 dBsm)",
+      "rcs_m2": 1.0,
+      "R_pd90_m": 3904.321578815275,
+      "R_pd50_m": 4504.206647417733,
+      "R_track_spotlight_m": 6110.59349865118
+    },
+    {
+      "target": "Vehicle (+10 dBsm)",
+      "rcs_m2": 10.0,
+      "R_pd90_m": 6942.974673777863,
+      "R_pd50_m": 8009.7379396634,
+      "R_track_spotlight_m": 10866.342601769098
+    }
+  ],
+  "long_range_mode": {
+    "vehicle_m": 6825.0531684231755,
+    "human_m": 3838.009443225679
+  },
+  "spotlight_gain_db": 7.781512503836437,
+  "power_W": {
+    "GaN PA x6 (1.0 W RF each, 30% PAE)": 20.0,
+    "TX drivers / switches": 1.2,
+    "RX RFIC HRX-8 x6 (48 ch @ 75 mW)": 3.5999999999999996,
+    "Chirp synth + LO distribution": 2.5,
+    "ADC AD9083 x6 (96 ch @ 50 mW)": 4.800000000000001,
+    "Versal AI Edge + LPDDR4 + flash": 9.5,
+    "Eth PHY, GNSS/IMU, MCU, RID rx": 1.5,
+    "DC-DC conversion loss (92%)": 3.747826086956522
+  },
+  "power_input_W": 46.84782608695652,
+  "mass_g": {
+    "Housing (AlSi10Mg cast, finned)": 455,
+    "Radome (PC/ABS 1.0 mm)": 62,
+    "Antenna/RF PCB (hybrid RO4003C)": 118,
+    "RF shield / heat-spreader frame (Al)": 96,
+    "Digital PCB": 72,
+    "Power & I/O PCB": 28,
+    "Connectors (2x M12) + vent": 46,
+    "Gaskets, TIM, fasteners": 38
+  },
+  "mass_total_g": 915,
+  "accuracy_at_1km_deg": [
+    0.1944687954808997,
+    0.34824194127526914
+  ]
+}

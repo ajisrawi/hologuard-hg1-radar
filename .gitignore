@@ -1,0 +1,12 @@
+# regenerable / large outputs (see README "Regenerate everything")
+firmware/sim/out/
+firmware/build/
+board/glb/
+board/step/
+*.FCBak
+*.blend1
+*-backups/
+*.kicad_prl
+__pycache__/
+*.obj
+*.pyc

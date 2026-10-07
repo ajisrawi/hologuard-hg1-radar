@@ -1,0 +1,63 @@
+{
+ "n_frames": 24,
+ "false_plots_total": 6,
+ "false_confirmed_tracks": 0,
+ "mean_proc_ms": 197.66600000000003,
+ "targets": {
+  "phantom4": {
+   "plot_detections": 9,
+   "pd_per_cpi": 0.38,
+   "range_rmse_m": 1.02,
+   "az_rmse_deg": 0.44,
+   "el_rmse_deg": 0.78,
+   "vr_rmse_mps": 0.47,
+   "mean_snr_db": 14.6,
+   "confirmed_frames": 2,
+   "first_confirmed_frame": 22,
+   "track_ids": [
+    3
+   ],
+   "track_pos_rmse_m": 4.19,
+   "class": "UAS-rotary",
+   "class_expected": "UAS-rotary",
+   "class_ok": true
+  },
+  "fpv": {
+   "plot_detections": 23,
+   "pd_per_cpi": 0.96,
+   "range_rmse_m": 0.89,
+   "az_rmse_deg": 0.45,
+   "el_rmse_deg": 0.65,
+   "vr_rmse_mps": 0.53,
+   "mean_snr_db": 17.9,
+   "confirmed_frames": 22,
+   "first_confirmed_frame": 2,
+   "track_ids": [
+    2
+   ],
+   "track_pos_rmse_m": 3.86,
+   "class": "UAS-rotary",
+   "class_expected": "UAS-rotary",
+   "class_ok": true
+  },
+  "gull": {
+   "plot_detections": 21,
+   "pd_per_cpi": 0.88,
+   "range_rmse_m": 0.3,
+   "az_rmse_deg": 0.13,
+   "el_rmse_deg": 0.22,
+   "vr_rmse_mps": 0.07,
+   "mean_snr_db": 23.9,
+   "confirmed_frames": 22,
+   "first_confirmed_frame": 2,
+   "track_ids": [
+    1
+   ],
+   "track_pos_rmse_m": 0.75,
+   "class": "bird",
+   "class_expected": "bird",
+   "class_ok": true
+  }
+ },
+ "pass": true
+}
