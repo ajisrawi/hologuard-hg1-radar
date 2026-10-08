@@ -10,3 +10,7 @@ board/step/
 __pycache__/
 *.obj
 *.pyc
+.venv/
+# EM run logs (regenerable; Modal logs carry account workspace URLs)
+antenna/em/results/**/*.log
+board/kicad/_hg1_fp_scratch.kicad_pro

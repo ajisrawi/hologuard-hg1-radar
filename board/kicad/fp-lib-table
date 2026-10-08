@@ -1,0 +1,4 @@
+(fp_lib_table
+	(version 7)
+	(lib (name "HG1")(type "KiCad")(uri "${KIPRJMOD}/HG1.pretty")(options "")(descr "HoloGuard HG-1 project footprints"))
+)

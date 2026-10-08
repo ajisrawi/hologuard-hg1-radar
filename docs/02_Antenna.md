@@ -35,12 +35,15 @@ The free area between the TX columns carries the **Remote-ID / 2.4–5.8 GHz RF-
 | Item | Value |
 |---|---|
 | Polarisation | linear horizontal (E-plane = azimuth): matches horizontal rotor blades and gives a wide E-plane for ±60° az |
-| Parasitic patch (L1) | 5.11 × 5.60 mm on 0.813 mm RO4003C |
-| Driven patch (L2) | 4.63 × 5.00 mm on 0.508 mm RO4003C |
-| Coupling slot (L3 GND) | dog-bone, 3.3 × 0.30 mm with 1.2 mm end arms |
-| Feed (L4) | 50 Ω stripline, w = 0.14 mm, b = 0.41 mm, open stub 2.09 mm beyond slot |
-| Bandwidth target | 15.1–16.9 GHz (11 %, VSWR < 2 including ±60° active match) |
-| Embedded gain | 4.7 dBi (RX lattice), 5.5 dBi (isolated TX) |
+| Parasitic patch (L1) | 4.48 × 5.60 mm, 1.016 mm above L2 (0.813 RO4003C core + 0.203 RO4450F bond ply) |
+| Driven patch (L2) | 3.21 × 5.00 mm on 0.508 mm RO4003C |
+| Coupling slot (L3 GND) | dog-bone, 3.02 × 0.30 mm with 2.14 mm end arms |
+| Feed (L4) | 50 Ω stripline, w = 0.14 mm, b = 0.41 mm, open stub 1.50 mm beyond slot |
+| Element cavity | blind L1→L5 GND via fence on every cell boundary, 1.0 mm pitch |
+| Active match (full-wave) | \|S11\| < −10 dB over 0.52–0.70 GHz centred ≈ 16.0 GHz at every scan to 60° az / 40° el / 45° diagonal; −5.6 to −8.6 dB at the 15.5 / 16.5 GHz allocation edges |
+| Embedded gain | 4.7 dBi (RX lattice), 5.5 dBi (isolated TX) (pattern model) |
+
+All dimensions are **full-wave optimised** (EMerge FEM, infinite-array unit cell with Floquet port), see [06_EM_Simulation.md](06_EM_Simulation.md). The first analytic cut (5.11 / 4.63 mm patches, 0.813 mm spacer) resonated near 13–14 GHz, because the superstrate-loaded patches are electrically much longer than the closed-form estimate. Without the element via fence, the array goes blind near 60° azimuth scan.
 
 The aperture-coupled stack gives roughly twice the bandwidth of a probe-fed patch. It keeps the feed network and RFICs below a ground plane, so there's no spurious feed radiation. It also lets the RFICs mount directly behind their elements (antenna-in-package style).
 
@@ -68,7 +71,10 @@ On a confirmed threat track, the six PAs are phased coherently through the ADAR1
 
 ## 6. Verification still required
 
-- Full-wave unit-cell (Floquet) and finite-array embedded-element simulation (HFSS/CST/openEMS) to tune patch, slot and stub dimensions. The dimensions above are analytic first cuts (transmission-line model with stacked-patch scaling).
+- **Done:** full-wave unit-cell (Floquet) tuning of patch, slot, stub and spacer over scan ([06_EM_Simulation.md](06_EM_Simulation.md)).
+- **Still to do:**
+  - finite-array embedded-element patterns, including the edge elements and the real via-post fence rather than a solid wall;
+  - a second, independent solver (openEMS / HFSS / CST) as a cross-check before fabrication.
 - Radome (1.0 mm PC/ABS, εr 2.8) at an air gap of about 8 mm: check scan loss and the active-reflection-coefficient ripple.
 - TX↔RX coupling with fence and absorber: target ≥ 60 dB at 15.5–16.5 GHz.
 - OTA calibration procedure (probe + far-field range) for the 288 virtual channels.

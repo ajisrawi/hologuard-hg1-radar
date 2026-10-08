@@ -37,7 +37,7 @@ C = 299.792458  # mm*GHz
 # =====================================================================
 ER_CORE = 3.55          # RO4003C design Dk
 ER_PP = 3.52            # RO4450F prepreg
-H_PAR = 0.813           # L1-L2 (parasitic above driven)
+H_PAR = 1.016           # L1-L2 (parasitic above driven): 0.813 RO4003C + 0.203 RO4450F, EM-optimised
 H_DRV = 0.508           # L2-L3 (driven above slotted ground)
 H_FEED_TOP = 0.203      # L3-L4
 H_FEED_BOT = 0.203      # L4-L5 (RO4450F 0.1 + RO4003C 0.1)
@@ -62,9 +62,15 @@ w_drv = 5.0
 l_single, eeff = patch_length(f0, ER_CORE, H_DRV, w_drv)
 # Stacked patch: driven ~4% shorter, parasitic ~6% longer than a single
 # resonator; the two coupled resonances straddle f0 for ~12 % VSWR<2 BW.
-l_drv = 0.96 * l_single
-l_par = 1.06 * l_single
+l_drv_analytic = 0.96 * l_single
+l_par_analytic = 1.06 * l_single
 w_par = 5.6
+# Full-wave (EMerge FEM, infinite-array unit cell with the element via-fence cavity) optimised
+# dimensions, docs/06_EM_Simulation.md. The superstrate-loaded patches resonate far lower than
+# the closed-form estimate above, so these replace it.
+EM = {"drv_l": 3.21, "par_l": 4.48, "slot_l": 3.02, "arm_l": 2.14, "stub": 1.50}
+l_drv = EM["drv_l"]
+l_par = EM["par_l"]
 b = H_FEED_TOP + H_FEED_BOT
 er_strip = (ER_CORE + ER_PP) / 2
 ws = np.linspace(0.05, 0.4, 400)
@@ -82,8 +88,12 @@ element = {
     "single_patch_eeff": eeff,
     "driven_patch_LxW_mm": [round(l_drv, 2), w_drv],
     "parasitic_patch_LxW_mm": [round(l_par, 2), w_par],
-    "slot": {"length_mm": 3.3, "width_mm": 0.30, "end_arms_mm": [1.2, 0.30]},
-    "stub_beyond_slot_mm": round(0.21 * lam_g_strip, 2),
+    "slot": {"length_mm": EM["slot_l"], "width_mm": 0.30, "end_arms_mm": [EM["arm_l"], 0.30]},
+    "stub_beyond_slot_mm": EM["stub"],
+    "analytic_start": {"driven_l_mm": round(l_drv_analytic, 2), "parasitic_l_mm": round(l_par_analytic, 2),
+                       "slot_l_mm": 3.3, "arm_l_mm": 1.2, "stub_mm": round(0.21 * lam_g_strip, 2),
+                       "h_par_mm": 0.813},
+    "element_fence": "blind L1-L5 GND via rows on every cell boundary, 1.0 mm pitch",
     "stripline_50ohm_width_mm": round(w50, 3),
     "stripline_ground_spacing_mm": b,
     "lambda_g_stripline_mm": lam_g_strip,
@@ -91,6 +101,9 @@ element = {
                          "L3-L4 RO4003C": H_FEED_TOP, "L4-L5 RO4450F+RO4003C": H_FEED_BOT},
     "embedded_pattern_model": "E-plane cos^0.9, H-plane cos^1.3 (power), 4.7 dBi RX / 5.5 dBi TX",
     "target_bandwidth_vswr2": "15.1-16.9 GHz (11 %) incl. +/-60 deg az active-match",
+    "em_result": "active |S11| < -10 dB over >= 0.52 GHz centred ~16.0-16.1 GHz at every scan to "
+                 "60 deg az / 40 deg el / 45 deg diagonal; -5.6 to -8.6 dB at the 15.5/16.5 GHz "
+                 "allocation edges (covers the 250 MHz chirp anywhere in ~15.7-16.3 GHz)",
 }
 with open(os.path.join(HERE, "element_design.json"), "w") as fh:
     json.dump(element, fh, indent=2)

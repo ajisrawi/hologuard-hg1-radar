@@ -1,0 +1,95 @@
+(footprint "GNSS_PATCH_18x18"
+	(version 20251024)
+	(generator "hg1_generate_boards")
+		(layer "F.Cu")
+		(property "Reference" "REF**"
+			(at 0 -3 0)
+			(layer "F.SilkS")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "GNSS L1/L5 ceramic patch 18x18"
+			(at 0 -3 0)
+			(layer "F.Fab")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 0 -3 0)
+			(layer "F.Fab")
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 0 -3 0)
+			(layer "F.Fab")
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(duplicate_pad_numbers_are_jumpers no)
+		(fp_rect
+			(start -159.25 -139.25)
+			(end -140.75 -120.75)
+			(stroke
+				(width 0.1)
+				(type default)
+			)
+			(fill no)
+			(layer "F.CrtYd")
+		)
+		(fp_rect
+			(start -159.25 -139.25)
+			(end -140.75 -120.75)
+			(stroke
+				(width 0.1)
+				(type default)
+			)
+			(fill no)
+			(layer "F.Fab")
+		)
+		(pad "1" smd rect
+			(at -150 -128.2)
+			(size 1.2 1.2)
+			(layers "F.Cu" "F.Mask" "F.Paste")
+			(thermal_bridge_angle 45)
+		)
+		(pad "2" smd rect
+			(at -156 -136)
+			(size 3 3)
+			(layers "F.Cu" "F.Mask" "F.Paste")
+			(thermal_bridge_angle 45)
+		)
+		(pad "3" smd rect
+			(at -144 -136)
+			(size 3 3)
+			(layers "F.Cu" "F.Mask" "F.Paste")
+			(thermal_bridge_angle 45)
+		)
+		(pad "4" smd rect
+			(at -156 -124)
+			(size 3 3)
+			(layers "F.Cu" "F.Mask" "F.Paste")
+			(thermal_bridge_angle 45)
+		)
+		(pad "5" smd rect
+			(at -144 -124)
+			(size 3 3)
+			(layers "F.Cu" "F.Mask" "F.Paste")
+			(thermal_bridge_angle 45)
+		)
+		(embedded_fonts no)
+)

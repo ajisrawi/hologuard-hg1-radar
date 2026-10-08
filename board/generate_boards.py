@@ -20,6 +20,7 @@ Run with KiCad's interpreter:
 import json
 import math
 import os
+import re
 import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -28,7 +29,7 @@ sys.path.insert(0, ROOT)
 sys.path.insert(0, HERE)
 import hg1_params as P  # noqa: E402
 import pcbnew  # noqa: E402
-from kicad_helpers import Board  # noqa: E402
+from kicad_helpers import Board, OX, OY, inject_stackup  # noqa: E402
 
 OUT = os.path.join(HERE, "kicad")
 os.makedirs(OUT, exist_ok=True)
@@ -43,6 +44,12 @@ ARM_L = EL["slot"]["end_arms_mm"][0]
 STUB = EL["stub_beyond_slot_mm"]
 W_STRIP = EL["stripline_50ohm_width_mm"]
 W_CPW = 0.30          # B.Cu grounded-CPW on 0.17 mm RO4350B (~50 ohm)
+
+
+GNSS_PADS = [dict(num=1, x=0, y=-1.8, w=1.2, h=1.2, net="GNSS_RF"),
+             dict(num=2, x=-6, y=6, w=3, h=3, net="GND"), dict(num=3, x=6, y=6, w=3, h=3, net="GND"),
+             dict(num=4, x=-6, y=-6, w=3, h=3, net="GND"), dict(num=5, x=6, y=-6, w=3, h=3, net="GND")]
+MAG_PADS = [dict(num=k + 1, x=-4.445 + (k % 8) * 1.27, y=-3.6 if k < 8 else 3.6, w=0.7, h=1.6) for k in range(16)]
 
 
 def h_slot(cx, cy):
@@ -81,11 +88,9 @@ def build_ant():
     # Remote-ID / RF-detect 2.45 GHz patch (with 5.8 GHz U-slot) + GNSS patch + OTA cal probe
     B.rect("F.Cu", 0, 42, 31.4, 31.4)
     B.via(0, 42 - 6.5, "RID_RF", 0.3, 0.6)
-    B.custom_fp("AE1", "GNSS L1/L5 ceramic patch 18x18 (Taoglas CGGP.18 class)", 0, 80,
-                [dict(num=1, x=0, y=-1.8, w=1.2, h=1.2, net="GNSS_RF"),
-                 dict(num=2, x=-6, y=6, w=3, h=3, net="GND"), dict(num=3, x=6, y=6, w=3, h=3, net="GND"),
-                 dict(num=4, x=-6, y=-6, w=3, h=3, net="GND"), dict(num=5, x=6, y=-6, w=3, h=3, net="GND")],
-                courtyard=(18.5, 18.5))
+    B.custom_fp("AE1", "GNSS L1/L5 patch", 0, 80,
+                GNSS_PADS,
+                courtyard=(18.5, 18.5), fpid="GNSS_PATCH_18x18")
     for gx, gy in ((-6, 86), (6, 86), (-6, 74), (6, 74)):
         B.bvia(gx, gy, "GND", "F.Cu", "In4.Cu", 0.2, 0.45)
     B.rect("F.Cu", 0, -4, 4.0, 4.0)
@@ -264,7 +269,7 @@ def build_ant():
     for s, ref in ((-1, "U50"), (1, "U51")):
         bf[s] = B.fp("Package_DFN_QFN", "QFN-48-1EP_7x7mm_P0.5mm_EP5.6x5.6mm_ThermalVias", ref,
                      "ADAR1000 4-ch Ku beamformer (DDMA phase code / spotlight)", s * 30, 40.5,
-                     bottom=True)
+                     rot=0 if s > 0 else 180, bottom=True)
         for p_ in bf[s].Pads():
             if not p_.GetNumber().isdigit() or int(p_.GetNumber()) > 48:
                 p_.SetNet(B.net("GND"))
@@ -274,15 +279,18 @@ def build_ant():
     tx0, ty0 = B.pad_xy(p_tx)
     B.track("B.Cu", [(tx0, ty0), (tx0, 52.0)], W_CPW, "TX_CHIRP")
     for s in (-1, 1):
-        pb_ = B.nearest_pad(bf[s], s * 30, 44.5, used_bf[s], side="top")
+        # chirp enters on the inner side; mirror-symmetric target so U50 (rotated
+        # 180 deg) and U51 use the same pad for RF_IN
+        pb_ = B.nearest_pad(bf[s], s * 26.0, 40.5 + 0.25 * s, used_bf[s], side="left" if s > 0 else "right")
         bx2, by2 = B.pad_xy(pb_)
-        B.connect("B.Cu", bf[s], pb_, [(tx0, 52.0), (bx2, 52.0)], W_CPW, "TX_CHIRP")
+        B.connect("B.Cu", bf[s], pb_, [(tx0, 52.0), (s * 24.0, 52.0), (s * 24.0, by2)], W_CPW, "TX_CHIRP")
 
     for i, (x, y) in enumerate(tx):
         s = 1 if x > 0 else -1
         pa_x = x - s * 11.0
         pa = B.fp("Package_DFN_QFN", "QFN-24-1EP_4x4mm_P0.5mm_EP2.65x2.65mm_ThermalVias",
-                  f"U{60 + i}", "Ku GaN-on-SiC PA 1 W (QGaN15, 28 V)", pa_x, y, bottom=True)
+                  f"U{60 + i}", "Ku GaN-on-SiC PA 1 W (QGaN15, 28 V)", pa_x, y,
+                  rot=0 if s > 0 else 180, bottom=True)   # mirrored: same pads face the antenna
         for p_ in pa.Pads():
             if not p_.GetNumber().isdigit() or int(p_.GetNumber()) > 24:
                 p_.SetNet(B.net("GND"))
@@ -301,7 +309,7 @@ def build_ant():
                   W_CPW, net)
         p_in = B.nearest_pad(pa, pa_x - s * 2.0, y, u_pa, side="left" if s > 0 else "right")
         if abs(y - 40.5) < 1:
-            p_bf = B.nearest_pad(bf[s], s * 33.5, 40.5, used_bf[s], side="right" if s > 0 else "left")
+            p_bf = B.nearest_pad(bf[s], s * 33.5, 40.5 + 0.25 * s, used_bf[s], side="right" if s > 0 else "left")
         else:
             p_bf = B.nearest_pad(bf[s], s * 32.0, 44.5 if y > 40.5 else 36.5, used_bf[s],
                                  side="top" if y > 40.5 else "bottom")
@@ -357,11 +365,12 @@ def build_ant():
                 targets = edge[::-1]                        # leading lane -> furthest pad
                 for q in targets:
                     jused.add(q.GetNumber())
-            for lane, (p, q) in enumerate(zip(order, targets)):
+            for p, q in zip(order, targets):
+                lane = lanes.index(p)            # lane number fixed by the ADC ball, not routing order
                 net = f"JESD{k + 1}_L{lane}"
                 p.SetNet(B.net(net))
                 (x1, y1), (x2, y2) = B.pad_xy(p), B.pad_xy(q)
-                yh = -29.5 + lane * 0.5
+                yh = -29.5 + order.index(p) * 0.5
                 B.connect("B.Cu", conn[s], q, [(x1, y1), (x1, yh), (x2, yh)], 0.12, net)
 
     # ---------------- mounting, shield-frame outlines, labels ------------
@@ -384,6 +393,28 @@ def build_ant():
                 for dx in (-hw, 0, hw):
                     for dy in (-hw, 0, hw):
                         B.bvia(cx_ + dx, cy_ + dy, "GND", "In8.Cu", "B.Cu", 0.15, 0.35)
+    # Element cavity fence (EM-verified, docs/06_EM_Simulation.md): blind L1->L5 via rows on
+    # every RX cell boundary and around each TX element, 1.0 mm pitch (< lambda_g/8). It
+    # suppresses the TM0 surface wave of the patch stack that otherwise blinds the array near
+    # 60 deg E-plane (azimuth) scan.
+    def via_line(x0, y0, x1, y1, pitch=1.0):
+        n = max(1, int(round(math.hypot(x1 - x0, y1 - y0) / pitch)))
+        return [(x0 + (x1 - x0) * k / n, y0 + (y1 - y0) * k / n) for k in range(n + 1)]
+
+    fpts = []
+    xa, xb = P.RX_X0 - P.D / 2, P.RX_X0 + (P.RX_NX - 0.5) * P.D
+    ya, yb = P.RX_Y0 + P.D / 2, P.RX_Y0 - (P.RX_NY - 0.5) * P.D
+    for i in range(P.RX_NX + 1):
+        fpts += via_line(xa + i * P.D, yb, xa + i * P.D, ya)
+    for j in range(P.RX_NY + 1):
+        fpts += via_line(xa, ya - j * P.D, xb, ya - j * P.D)
+    h = P.D / 2
+    for (x, y) in tx:
+        sq = [(x - h, y - h), (x + h, y - h), (x + h, y + h), (x - h, y + h)]
+        for (x0, y0), (x1, y1) in zip(sq, sq[1:] + sq[:1]):
+            fpts += via_line(x0, y0, x1, y1)
+    nf, nskip = B.fence(fpts, "GND", "F.Cu", "In4.Cu", 0.2, 0.4, margin=0.2)
+    print(f"   ANT: {nf} element-fence vias ({nskip} positions blocked)")
     # GND stitching: every free 3 mm grid point (keeps clear of patches,
     # slots, feeds, pads and routing on all layers)
     patch_keep = [rect_pts(x, y, L_PAR + 3.0, W_PAR + 3.0) for (x, y) in list(tx) + list(rx)]
@@ -396,7 +427,7 @@ def build_ant():
     B.text("Dwgs.User", "Shield/heat-spreader frame walls (AlSi10Mg, 1.5 mm, conductive gasket)",
            0, -96.5, 1.6)
     B.text("B.SilkS", "HoloGuard HG-1  ANT/RF  rev A", 0, 10, 2.5, mirrored=True, thickness=0.35)
-    B.text("B.SilkS", "10L hybrid RO4003C/RO4450F/370HR/RO4350B 2.1 mm", 0, 14, 1.4, mirrored=True)
+    B.text("B.SilkS", f"10L hybrid RO4003C/RO4450F/370HR/RO4350B {P.ANT_PCB_T:.1f} mm", 0, 14, 1.4, mirrored=True)
     B.text("F.SilkS", "HG-1 ANT  TX: 6  RX: 48  pitch 9.0 mm  H-pol", 0, 92.2, 1.4)
     # Patches are mask-free (immersion silver / ENEPIG): soldermask over a
     # patch detunes it by ~1-2 %.
@@ -505,9 +536,9 @@ def build_pwr():
     B.track("B.Cu", [(-34.5, 0), (34.5, 0)], 1.0, "CHASSIS")
 
     B.custom_fp("J1", "M12 A-coded 8p PCB rear-mount: 12-36 VDC, RS-485, 1PPS, discretes",
-                -42, 0, m12_pads(8, "PWRIO_"), courtyard=(17, 17), bottom=True)
+                -42, 0, m12_pads(8, "PWRIO_"), courtyard=(17, 17), bottom=True, fpid="M12_8P_PCB")
     B.custom_fp("J2", "M12 X-coded 8p PCB rear-mount: 1000BASE-T / 2.5GBASE-T",
-                42, 0, m12_pads(8, "MDI_"), courtyard=(17, 17), bottom=True)
+                42, 0, m12_pads(8, "MDI_"), courtyard=(17, 17), bottom=True, fpid="M12_8P_PCB")
     # F side keeps clear of the M12 THT pin circles (r 8.5 mm at x=+-42).
     parts = [
         ("Diode_SMD", "D_SMC", "D1", "SMCJ36CA TVS (MIL-STD-1275 / ISO 7637)", -60, 0, 90),
@@ -533,9 +564,8 @@ def build_pwr():
     ]
     for lib, name, ref, val, x, y, rot in parts:
         B.fp(lib, name, ref, val, x, y, rot=rot)
-    B.custom_fp("T1", "1000BASE-T magnetics (HX1188NL class)", 60, -2,
-                [dict(num=k + 1, x=-4.5 + (k % 6) * 1.8, y=-3.6 if k < 6 else 3.6, w=0.8, h=1.6)
-                 for k in range(12)], courtyard=(12, 9))
+    B.custom_fp("T1", "1000BASE-T magnetics, 4 pairs (HX1188NL class)", 60, -2,
+                MAG_PADS, courtyard=(12, 9), fpid="GBE_MAG_16P")
     for k, (x, y) in enumerate([(-68, 10.5), (68, 10.5), (-68, -10.5), (68, -10.5)]):
         B.fp("MountingHole", "MountingHole_3.2mm_M3_Pad_Via", f"H{k + 1}", "M3", x, y, pad_net="GND")
     B.text("F.SilkS", "HG-1 PWR/IO rev A  12-36 VDC  6L 2oz", -40, -13.6, 1.1)
@@ -558,11 +588,55 @@ def refill_and_drc(path):
     return len(d.get("violations", [])), len(d.get("unconnected_items", [])), kinds
 
 
+def export_hg1_footprints():
+    """Project footprint library HG1.pretty: the generated footprints, unflipped at the
+    origin on a scratch board, written out as .kicad_mod files."""
+    libdir = os.path.join(OUT, "HG1.pretty")
+    os.makedirs(libdir, exist_ok=True)
+    B = Board(2, 1.6)
+    defs = {"GNSS_PATCH_18x18": ("GNSS L1/L5 ceramic patch 18x18", GNSS_PADS, (18.5, 18.5)),
+            "M12_8P_PCB": ("M12 8-pin PCB rear-mount receptacle", m12_pads(8, "N"), (17, 17)),
+            "GBE_MAG_16P": ("1000BASE-T magnetics, 16 pads", MAG_PADS, (12, 9))}
+    for name, (desc, pads, cy) in defs.items():
+        pads = [{k: v for k, v in pd.items() if k != "net"} for pd in pads]
+        B.custom_fp("REF**", desc, 0, 0, pads, courtyard=cy, fpid=name)
+    tmp = os.path.join(OUT, "_hg1_fp_scratch.kicad_pcb")
+    B.save(tmp)
+    txt = open(tmp, encoding="utf-8").read()
+    os.remove(tmp)
+    NL, TAB = chr(10), chr(9)
+    blocks = re.findall(NL + TAB + r'\(footprint "HG1:([^"]+)"(.*?)' + NL + TAB + r'\)', txt, re.S)
+    for name, body in blocks:
+        body = re.sub(NL + TAB + TAB + r'\(at [^)]*\)', "", body, count=1)     # footprint placement
+        body = re.sub(r'\s*\(uuid "[^"]*"\)', "", body)
+        body = re.sub(r'\s*\(net[^)]*\)', "", body)
+        # the board helper uses page coordinates; the origin of the board frame is (OX, OY)
+        body = re.sub(r'\(at ([-\d.]+) ([-\d.]+)', lambda m: f"(at {float(m.group(1)) - OX:g} {float(m.group(2)) - OY:g}",
+                      body)
+        body = re.sub(r'\((start|end) ([-\d.]+) ([-\d.]+)\)',
+                      lambda m: f"({m.group(1)} {float(m.group(2)) - OX:g} {float(m.group(3)) - OY:g})", body)
+        body = body.replace("(at -150 -130", "(at 0 -3")                  # property texts at origin
+        out = (f'(footprint "{name}"' + NL + TAB + '(version 20251024)' + NL + TAB
+               + '(generator "hg1_generate_boards")' + body + NL + ')' + NL)
+        open(os.path.join(libdir, name + ".kicad_mod"), "w", encoding="utf-8").write(out)
+    return [b[0] for b in blocks]
+
+
 if __name__ == "__main__":
+    print("HG1.pretty:", export_hg1_footprints())
     for name, fn in (("HG1-ANT", build_ant), ("HG1-DSP", build_dsp), ("HG1-PWR", build_pwr)):
         b = fn()
+        xml = os.path.join(OUT, f"{name}.net.xml")
+        if os.path.exists(xml):     # schematic exists -> scripted "Update PCB from Schematic"
+            W_ = {"HG1-ANT": P.ANT_PCB_W, "HG1-DSP": P.DIG_PCB_W, "HG1-PWR": P.PWR_PCB_W}[name]
+            st = b.apply_netlist(xml, f"{name}.kicad_sch", W_ / 2 + 15, 95)
+            print(f"   netlist sync: {st['linked']} footprints linked, {st['pads']} pad nets, "
+                  f"{st['staged']} new footprints staged beside the board", flush=True)
         path = os.path.join(OUT, f"{name}.kicad_pcb")
         b.save(path)
+        inject_stackup(path, P.STACKS[name.split("-")[1]], P.MASK_T)
+        print(f"   stack-up: {len(P.STACKS[name.split('-')[1]]['cu'])} copper layers, "
+              f"{P.stack_thickness(name.split('-')[1]):.3f} mm", flush=True)
         nfp = len(list(b.b.GetFootprints()))
         ntr = len(list(b.b.GetTracks()))
         print(f"{name}: {nfp} footprints, {ntr} tracks/vias, {len(b.nets)} nets -> {path}", flush=True)

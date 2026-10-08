@@ -1,0 +1,161 @@
+(footprint "GBE_MAG_16P"
+	(version 20251024)
+	(generator "hg1_generate_boards")
+		(layer "F.Cu")
+		(property "Reference" "REF**"
+			(at 0 -3 0)
+			(layer "F.SilkS")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "1000BASE-T magnetics, 16 pads"
+			(at 0 -3 0)
+			(layer "F.Fab")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 0 -3 0)
+			(layer "F.Fab")
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 0 -3 0)
+			(layer "F.Fab")
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(duplicate_pad_numbers_are_jumpers no)
+		(fp_rect
+			(start -156 -134.5)
+			(end -144 -125.5)
+			(stroke
+				(width 0.1)
+				(type default)
+			)
+			(fill no)
+			(layer "F.CrtYd")
+		)
+		(fp_rect
+			(start -156 -134.5)
+			(end -144 -125.5)
+			(stroke
+				(width 0.1)
+				(type default)
+			)
+			(fill no)
+			(layer "F.Fab")
+		)
+		(pad "1" smd rect
+			(at -154.445 -126.4)
+			(size 0.7 1.6)
+			(layers "F.Cu" "F.Mask" "F.Paste")
+			(thermal_bridge_angle 45)
+		)
+		(pad "2" smd rect
+			(at -153.175 -126.4)
+			(size 0.7 1.6)
+			(layers "F.Cu" "F.Mask" "F.Paste")
+			(thermal_bridge_angle 45)
+		)
+		(pad "3" smd rect
+			(at -151.905 -126.4)
+			(size 0.7 1.6)
+			(layers "F.Cu" "F.Mask" "F.Paste")
+			(thermal_bridge_angle 45)
+		)
+		(pad "4" smd rect
+			(at -150.635 -126.4)
+			(size 0.7 1.6)
+			(layers "F.Cu" "F.Mask" "F.Paste")
+			(thermal_bridge_angle 45)
+		)
+		(pad "5" smd rect
+			(at -149.365 -126.4)
+			(size 0.7 1.6)
+			(layers "F.Cu" "F.Mask" "F.Paste")
+			(thermal_bridge_angle 45)
+		)
+		(pad "6" smd rect
+			(at -148.095 -126.4)
+			(size 0.7 1.6)
+			(layers "F.Cu" "F.Mask" "F.Paste")
+			(thermal_bridge_angle 45)
+		)
+		(pad "7" smd rect
+			(at -146.825 -126.4)
+			(size 0.7 1.6)
+			(layers "F.Cu" "F.Mask" "F.Paste")
+			(thermal_bridge_angle 45)
+		)
+		(pad "8" smd rect
+			(at -145.555 -126.4)
+			(size 0.7 1.6)
+			(layers "F.Cu" "F.Mask" "F.Paste")
+			(thermal_bridge_angle 45)
+		)
+		(pad "9" smd rect
+			(at -154.445 -133.6)
+			(size 0.7 1.6)
+			(layers "F.Cu" "F.Mask" "F.Paste")
+			(thermal_bridge_angle 45)
+		)
+		(pad "10" smd rect
+			(at -153.175 -133.6)
+			(size 0.7 1.6)
+			(layers "F.Cu" "F.Mask" "F.Paste")
+			(thermal_bridge_angle 45)
+		)
+		(pad "11" smd rect
+			(at -151.905 -133.6)
+			(size 0.7 1.6)
+			(layers "F.Cu" "F.Mask" "F.Paste")
+			(thermal_bridge_angle 45)
+		)
+		(pad "12" smd rect
+			(at -150.635 -133.6)
+			(size 0.7 1.6)
+			(layers "F.Cu" "F.Mask" "F.Paste")
+			(thermal_bridge_angle 45)
+		)
+		(pad "13" smd rect
+			(at -149.365 -133.6)
+			(size 0.7 1.6)
+			(layers "F.Cu" "F.Mask" "F.Paste")
+			(thermal_bridge_angle 45)
+		)
+		(pad "14" smd rect
+			(at -148.095 -133.6)
+			(size 0.7 1.6)
+			(layers "F.Cu" "F.Mask" "F.Paste")
+			(thermal_bridge_angle 45)
+		)
+		(pad "15" smd rect
+			(at -146.825 -133.6)
+			(size 0.7 1.6)
+			(layers "F.Cu" "F.Mask" "F.Paste")
+			(thermal_bridge_angle 45)
+		)
+		(pad "16" smd rect
+			(at -145.555 -133.6)
+			(size 0.7 1.6)
+			(layers "F.Cu" "F.Mask" "F.Paste")
+			(thermal_bridge_angle 45)
+		)
+		(embedded_fonts no)
+)

@@ -1,12 +1,13 @@
 /* HoloGuard HG-1 housekeeping MCU -- STM32G474RE target BSP (STM32Cube HAL).
  *
  * Build inside an STM32CubeIDE project generated for STM32G474RETx with:
- *   ADC1 (12 ch scan, DMA circular): VIN, 28V, 5V, 3V3, NEG5 (via -1/5 inverting
- *   divider), PA drain-current shunt amps x6 (INA186), NTC x3 (housing, RFIC, spare)
+ *   ADC1 (13 ch scan, DMA circular): VIN PA0, 28V PA1, 5V PA2, 3V3 PA3, NEG5 PC0
+ *   (inverting divider), PA drain-current INA186 x6 on PC1 PC2 PC3 PB14 PF0 PB12,
+ *   NTC housing PB11, NTC RFIC PB0          (pin map = board/kicad/HG1-DSP.kicad_sch)
  *   SPI1  : ADAR1000 U50/U51 (4-wire, CS_BF0/CS_BF1)  -- PA gate bias DACs, TX VGA
- *   I2C1  : Versal SYSMON / PMBus (TPS546D24A telemetry), PA-pedestal NTC mux
+ *   I2C3  : PC8/PC9 -- Versal SYSMON / PMBus (TPS546D24A telemetry), ADS7138 PA-NTC ADC
  *   USART1: Versal link, 921600 8N1, DMA RX circular + DMA TX
- *   COMP1 : hardware -5 V monitor -> TIM1 BKIN -> forces DRAIN_SW low (no firmware path)
+ *   COMP1 : PB1 hardware -5 V monitor -> TIM1 BKIN -> forces PA8 (DRAIN_SW, TIM1_CH1) low
  *   IWDG  : 50 ms
  * NOTE: ADAR1000 register addresses / bias-DAC scaling below must be checked
  * against the ADAR1000 datasheet revision used (marked VERIFY).
@@ -19,25 +20,25 @@
 
 extern ADC_HandleTypeDef hadc1;
 extern SPI_HandleTypeDef hspi1;
-extern I2C_HandleTypeDef hi2c1;
+extern I2C_HandleTypeDef hi2c3;
 extern UART_HandleTypeDef huart1;
 extern IWDG_HandleTypeDef hiwdg;
 
 /* ---------------- pin map (HG1-DSP rev A, U7) ---------------------------- */
 typedef struct { GPIO_TypeDef* port; uint16_t pin; bool active_low; } pin_t;
 static const pin_t EN_PINS[EN_COUNT] = {
-    [EN_NEG5] = {GPIOB, GPIO_PIN_0, false},
-    [EN_28V] = {GPIOB, GPIO_PIN_1, false},
-    [EN_DRAIN_SW] = {GPIOB, GPIO_PIN_2, false},     /* also gated by TIM1 BKIN (COMP1) */
-    [EN_RF_5V] = {GPIOB, GPIO_PIN_10, false},
-    [EN_TX_MUTE_N] = {GPIOB, GPIO_PIN_11, false},   /* drives ADAR1000 TR / PA_ON */
+    [EN_NEG5] = {GPIOB, GPIO_PIN_4, false},
+    [EN_28V] = {GPIOB, GPIO_PIN_5, false},
+    [EN_DRAIN_SW] = {GPIOA, GPIO_PIN_8, false},     /* TIM1_CH1 forced output; BKIN (COMP1) overrides */
+    [EN_RF_5V] = {GPIOB, GPIO_PIN_7, false},
+    [EN_TX_MUTE_N] = {GPIOB, GPIO_PIN_6, false},    /* drives ADAR1000 TR / PA_ON via J4 */
     [EN_VERSAL] = {GPIOC, GPIO_PIN_6, false},
     [EN_HEATER] = {GPIOC, GPIO_PIN_7, false},
 };
 static bool en_state[EN_COUNT];
-#define PIN_PLL_LD_TX GPIOA, GPIO_PIN_8
-#define PIN_PLL_LD_LO GPIOA, GPIO_PIN_11
-#define PIN_NEG_PGOOD GPIOA, GPIO_PIN_12
+#define PIN_PLL_LD_TX GPIOC, GPIO_PIN_10
+#define PIN_PLL_LD_LO GPIOC, GPIO_PIN_11
+#define PIN_NEG_PGOOD GPIOC, GPIO_PIN_12
 #define PIN_CS_BF0 GPIOA, GPIO_PIN_4
 #define PIN_CS_BF1 GPIOA, GPIO_PIN_15
 
@@ -88,11 +89,11 @@ static int32_t versal_c10 = 250;
 
 void bsp_poll_slow(void) {   /* called from the 100 ms slot before thermal_step() */
     uint8_t buf[16];
-    if (HAL_I2C_Mem_Read(&hi2c1, 0x10 << 1, 0x00, I2C_MEMADD_SIZE_8BIT, buf, 12, 5) == HAL_OK)
+    if (HAL_I2C_Mem_Read(&hi2c3, 0x10 << 1, 0x00, I2C_MEMADD_SIZE_8BIT, buf, 12, 5) == HAL_OK)
         for (int i = 0; i < HG1_N_PA; ++i)
             pa_ntc_c10[i] = ntc_c10(((buf[2 * i] << 4) | (buf[2 * i + 1] >> 4)) * (3300.0f / 4095.0f));
     /* Versal SYSMON temperature via PMBus READ_TEMPERATURE_1 (0x8D), LINEAR11 */
-    if (HAL_I2C_Mem_Read(&hi2c1, 0x32 << 1, 0x8D, I2C_MEMADD_SIZE_8BIT, buf, 2, 5) == HAL_OK) {
+    if (HAL_I2C_Mem_Read(&hi2c3, 0x32 << 1, 0x8D, I2C_MEMADD_SIZE_8BIT, buf, 2, 5) == HAL_OK) {
         int16_t raw = (int16_t)(buf[0] | (buf[1] << 8));
         int16_t mant = (int16_t)(raw << 5) >> 5, exp = raw >> 11;
         float t = (float)mant * (exp >= 0 ? (float)(1 << exp) : 1.0f / (float)(1 << -exp));

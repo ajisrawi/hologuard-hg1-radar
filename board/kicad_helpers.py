@@ -17,6 +17,44 @@ def V(x, y):
     return pcbnew.VECTOR2I_MM(OX + x, OY - y)
 
 
+def stackup_sexpr(stack, mask_t=0.01):
+    """KiCad (stackup ...) block for a stack from hg1_params.STACKS: copper per layer plus the
+    dielectric gaps between them (several materials in one gap become KiCad sub-layers)."""
+    T3, T4 = "\t" * 3, "\t" * 4
+    n = len(stack["cu"])
+    cu_names = ["F.Cu"] + [f"In{k}.Cu" for k in range(1, n - 1)] + ["B.Cu"]
+    out = ["\t\t(stackup"]
+
+    def layer(name, typ, props=""):
+        out.append(f'{T3}(layer "{name}"\n{T4}(type "{typ}"){props}\n{T3})')
+
+    layer("F.SilkS", "Top Silk Screen")
+    layer("F.Paste", "Top Solder Paste")
+    layer("F.Mask", "Top Solder Mask", f"\n{T4}(thickness {mask_t})")
+    for i, name in enumerate(cu_names):
+        layer(name, "copper", f"\n{T4}(thickness {stack['cu'][i]})")
+        if i < n - 1:
+            typ, subs = stack["gaps"][i]
+            parts = [f"\n{T4}(thickness {t})\n{T4}(material \"{m}\")\n{T4}(epsilon_r {er})\n{T4}(loss_tangent {td})"
+                     for m, t, er, td in subs]
+            layer(f"dielectric {i + 1}", typ, " addsublayer".join(parts))
+    layer("B.Mask", "Bottom Solder Mask", f"\n{T4}(thickness {mask_t})")
+    layer("B.Paste", "Bottom Solder Paste")
+    layer("B.SilkS", "Bottom Silk Screen")
+    out.append(f'{T3}(copper_finish "{stack["finish"]}")\n{T3}(dielectric_constraints yes)\n\t\t)')
+    return "\n".join(out)
+
+
+def inject_stackup(path, stack, mask_t=0.01):
+    """Write the physical stack-up into a saved .kicad_pcb (replacing any existing one).
+    The pcbnew Python API cannot build a BOARD_STACKUP, so this edits the file text."""
+    import re
+    txt = open(path, encoding="utf-8").read()
+    txt = re.sub(r"\n\t\t\(stackup\n.*?\n\t\t\)(?=\n)", "", txt, flags=re.S)
+    txt = txt.replace("\n\t(setup\n", "\n\t(setup\n" + stackup_sexpr(stack, mask_t) + "\n", 1)
+    open(path, "w", encoding="utf-8").write(txt)
+
+
 class Board:
     def __init__(self, copper_layers, thickness_mm):
         self.b = pcbnew.BOARD()
@@ -196,6 +234,54 @@ class Board:
         v.thisown = False
         return v
 
+    def fence(self, pts, net, top, bottom, drill=0.2, dia=0.4, margin=0.25):
+        """Blind-via fence at explicit points (radar frame). A point is skipped when a via, a
+        drilled pad, or copper on the layers the via spans (top..bottom) is within `margin` mm,
+        so routing on layers below the fence does not punch gaps in it."""
+        order = ["F.Cu"] + [f"In{k}.Cu" for k in range(1, 31)] + ["B.Cu"]
+        span = {self.L(n) for n in order[order.index(top):order.index(bottom) + 1]}
+        r = dia / 2 + margin
+        obs, segs = [], []
+
+        def box(bb):
+            x0, y1 = pcbnew.ToMM(bb.GetLeft()) - OX, OY - pcbnew.ToMM(bb.GetTop())
+            x1, y0 = pcbnew.ToMM(bb.GetRight()) - OX, OY - pcbnew.ToMM(bb.GetBottom())
+            obs.append((x0 - r, y0 - r, x1 + r, y1 + r))
+
+        for f in self.b.GetFootprints():
+            for p in f.Pads():
+                if p.HasHole() or any(p.IsOnLayer(lay) for lay in span):
+                    box(p.GetBoundingBox())
+        for d in self.b.GetDrawings():
+            if d.GetLayer() in span:
+                box(d.GetBoundingBox())
+        for t_ in self.b.GetTracks():
+            if isinstance(t_, pcbnew.PCB_VIA):
+                box(t_.GetBoundingBox())
+            elif t_.GetLayer() in span:
+                a, b = t_.GetStart(), t_.GetEnd()
+                segs.append(((pcbnew.ToMM(a.x) - OX, OY - pcbnew.ToMM(a.y)),
+                             (pcbnew.ToMM(b.x) - OX, OY - pcbnew.ToMM(b.y)),
+                             pcbnew.ToMM(t_.GetWidth()) / 2 + r))
+
+        def seg_d(px, py, a, b):
+            (ax, ay), (bx, by) = a, b
+            dx, dy = bx - ax, by - ay
+            L2 = dx * dx + dy * dy
+            u = 0 if L2 == 0 else max(0, min(1, ((px - ax) * dx + (py - ay) * dy) / L2))
+            return math.hypot(px - (ax + u * dx), py - (ay + u * dy))
+
+        n, skipped = 0, 0
+        for x, y in dict.fromkeys((round(px, 3), round(py, 3)) for px, py in pts):
+            if any(a <= x <= c and b <= y <= d for a, b, c, d in obs) or \
+                    any(seg_d(x, y, a, b) <= w for a, b, w in segs):
+                skipped += 1
+                continue
+            self.bvia(x, y, net, top, bottom, drill, dia)
+            obs.append((x - 2 * r + margin, y - 2 * r + margin, x + 2 * r - margin, y + 2 * r - margin))
+            n += 1
+        return n, skipped
+
     def stitch(self, net, pitch, keep, margin=0.6, dia=0.45, drill=0.2, region=None):
         """Drop through-vias on a grid wherever nothing else is within
         `margin` mm (pads, tracks, vias, copper graphics on any layer)."""
@@ -256,6 +342,7 @@ class Board:
             raise RuntimeError(f"footprint not found: {lib}:{name}")
         f.SetReference(ref)
         f.SetValue(value)
+        f.SetFPID(pcbnew.LIB_ID(lib, name))
         f.SetPosition(V(x, y))
         f.SetOrientationDegrees(rot)
         self.b.Add(f)
@@ -267,11 +354,13 @@ class Board:
                 p.SetNet(self.net(pad_net))
         return f
 
-    def custom_fp(self, ref, value, x, y, pads, courtyard=None, bottom=False, fab_text=True):
+    def custom_fp(self, ref, value, x, y, pads, courtyard=None, bottom=False, fab_text=True, fpid=None):
         """pads: list of dict(num, x, y, w, h, shape='rect'|'circle', drill=None, net=None)."""
         f = pcbnew.FOOTPRINT(self.b)
         f.SetReference(ref)
         f.SetValue(value)
+        if fpid:
+            f.SetFPID(pcbnew.LIB_ID("HG1", fpid))
         f.SetPosition(V(x, y))
         for pd in pads:
             p = pcbnew.PAD(f)
@@ -345,7 +434,91 @@ class Board:
         px, py = self.pad_xy(pad)
         self.track(layer, list(pts) + [(px, py)], width, net)
 
+    # ------------------------------------------------- schematic -> PCB sync
+    def apply_netlist(self, xml_path, sheetfile, stage_x, stage_y):
+        """Scripted 'Update PCB from Schematic': link footprints to symbols, copy
+        values and pad nets from the KiCad XML netlist, and stage footprints of
+        not-yet-placed symbols on a grid beside the board (as KiCad's update does)."""
+        import xml.etree.ElementTree as ET
+        root = ET.parse(xml_path).getroot()
+        pin_net = {}
+        for n in root.find("nets"):
+            # incl. KiCad's unconnected-(...) nets; KiCad stores '/' escaped in net names
+            name = n.get("name").replace("/", "{slash}")
+            for node in n.findall("node"):
+                pin_net[(node.get("ref"), node.get("pin"))] = name
+        stats = dict(linked=0, staged=0, pads=0)
+        sx, sy, row_h = stage_x, stage_y, 0.0
+        for c in root.find("components"):
+            ref, fpname = c.get("ref"), (c.findtext("footprint") or "")
+            if ref.startswith("#"):
+                continue
+            if not fpname and self.b.FindFootprintByReference(ref) is None:
+                continue                       # not on the board (e.g. antenna element symbols)
+            ts = c.find("tstamps")
+            uid = (ts.text if ts is not None else c.findtext("tstamp") or "").split()[0]
+            f = self.b.FindFootprintByReference(ref)
+            if f is None:
+                lib, name = fpname.split(":")
+                f = pcbnew.FootprintLoad(os.path.join(FPLIB, lib + ".pretty"), name)
+                if f is None:
+                    continue
+                f.SetReference(ref)
+                f.SetFPID(pcbnew.LIB_ID(lib, name))
+                self.b.Add(f)
+                f.thisown = False
+                bb = f.GetBoundingBox(False)
+                w, h = pcbnew.ToMM(bb.GetWidth()) + 4.0, pcbnew.ToMM(bb.GetHeight()) + 4.0
+                if sx + w > stage_x + 120:
+                    sx, sy, row_h = stage_x, sy - row_h, 0.0
+                f.SetPosition(V(sx + w / 2, sy - h / 2))
+                sx += w
+                row_h = max(row_h, h)
+                stats["staged"] += 1
+            f.SetValue(c.findtext("value") or f.GetValue())
+            props = {pp.get("name") for pp in c.findall("property")}
+            attrs = f.GetAttributes()
+            if "exclude_from_bom" in props:
+                attrs |= pcbnew.FP_EXCLUDE_FROM_BOM
+            else:
+                attrs &= ~pcbnew.FP_EXCLUDE_FROM_BOM
+            if "dnp" in props:
+                attrs |= pcbnew.FP_DNP
+            f.SetAttributes(attrs)
+            try:
+                f.SetPath(pcbnew.KIID_PATH("/" + uid))
+                f.SetSheetname("/")
+                f.SetSheetfile(sheetfile)
+            except Exception:
+                pass
+            stats["linked"] += 1
+            for p in f.Pads():
+                net = pin_net.get((ref, p.GetNumber()))
+                if net:
+                    p.SetNet(self.net(net))
+                    stats["pads"] += 1
+        return stats
+
     # -------------------------------------------------------------- save
+    def export_custom_footprints(self, libdir):
+        """Write the generated (non-library) footprints to the project HG1.pretty."""
+        os.makedirs(libdir, exist_ok=True)
+        n = 0
+        for f in self.b.GetFootprints():
+            fid = f.GetFPID()
+            if fid.GetLibNickname() == "HG1":
+                try:
+                    g = pcbnew.FOOTPRINT(f)
+                    g.SetPosition(pcbnew.VECTOR2I(0, 0))
+                    if g.IsFlipped():
+                        g.Flip(g.GetPosition(), pcbnew.FLIP_DIRECTION_LEFT_RIGHT)
+                    g.SetOrientationDegrees(0)
+                    pcbnew.FootprintSave(libdir, g)
+                    n += 1
+                except Exception as exc:
+                    print("   footprint export skipped:", exc)
+        return n
+
     def save(self, path):
         # NOTE: pcbnew.ZONE_FILLER segfaults in KiCad 10.0.3 when vias sit
         # inside zones; zones are refilled afterwards with

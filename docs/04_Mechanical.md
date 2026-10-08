@@ -17,7 +17,7 @@
 | I/O | Floor-mounted (drip-safe): M12 A-coded 8-pin (power/IO), M12 X-coded 8-pin (Ethernet), Gore M12 vent, M4 earth stud. The PWR board lies on the floor and the M12s pass through it. |
 | Mounting | 4 × M6 bosses on a 50 mm square (back). 6061 tilt bracket: adapter plate, yoke, Ø8 pivot with locking knobs, clamp for a Ø48 mm pole. |
 | Sealing / IP67 | radome gasket land, M12 O-rings, vent membrane |
-| Mass (CAD) | **1,013 g** radar unit (EchoGuard 1,250 g); bracket 353 g extra |
+| Mass (CAD) | **1,059 g** radar unit (EchoGuard 1,250 g); bracket 353 g extra |
 | Thermal area | 0.221 m² wetted (fins included), about 25 K rise at 46.8 W |
 
 ![rear](../render/HG1_rear.png)

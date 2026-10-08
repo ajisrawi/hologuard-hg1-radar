@@ -28,7 +28,7 @@ EchoGuard figures are from Echodyne's public data sheet. HG-1 figures are comput
 | Parameter | Echodyne EchoGuard | **HoloGuard HG-1** | Basis |
 |---|---|---|---|
 | Size | 16.3 × 20.3 × 5.7 cm | **16.3 × 20.3 × 5.7 cm** | FreeCAD envelope |
-| Mass | 1.25 kg | **1.01 kg** | CAD volume × density, +35 % PCB component adder |
+| Mass | 1.25 kg | **1.06 kg** | CAD volume × density, +35 % PCB component adder |
 | Power | 50 W | **46.8 W** | power budget |
 | Band | K 24.45–24.65 GHz | **Ku 15.5–16.5 GHz** (500 MHz per mode) | trade study §3 |
 | Architecture | MESA, 1 analogue beam | **6 TX × 48 RX MIMO, 288 virtual, fully digital** | |
@@ -121,12 +121,12 @@ The inputs are:
 |---|---|
 | Housing (AlSi10Mg, finned) | 522 |
 | Shield / heat-spreader frame | 118 |
-| ANT PCB + copper + GNSS | 123 |
+| ANT PCB + copper + GNSS | 157 |
 | DSP + PWR PCBs | 80 |
-| PCB component adder (35 %) | 69 |
+| PCB component adder (35 %) | 81 |
 | Radome, screws, logo | 47 |
 | Connectors, vent, fence, TIM | 55 |
-| **Total** | **1,013** |
+| **Total** | **1,059** |
 
 **Thermal.** 46.8 W leaves through 0.22 m² of finned housing. With natural convection plus radiation (h ≈ 9 W/m²K, anodised ε ≈ 0.85), the rise is about 25 K. The GaN PAs, RFICs and Versal conduct into the cast shield frame and back-wall pedestal. Full TX power is held to about +45 °C ambient. Above +60 °C at the PA pedestal, the MCU backs TX off linearly (≤ 3 dB, roughly −16 % range), and TX trips at +95 °C. This is the same practical behaviour a passively cooled 50 W EchoGuard-class unit has to accept at +75 °C, but it's managed explicitly.
 

@@ -12,33 +12,43 @@
     "pitch_over_lambda_at_fmax": 0.49534268136925574,
     "single_patch_eeff": 3.130878196581056,
     "driven_patch_LxW_mm": [
-      4.63,
+      3.21,
       5.0
     ],
     "parasitic_patch_LxW_mm": [
-      5.11,
+      4.48,
       5.6
     ],
     "slot": {
-      "length_mm": 3.3,
+      "length_mm": 3.02,
       "width_mm": 0.3,
       "end_arms_mm": [
-        1.2,
+        2.14,
         0.3
       ]
     },
-    "stub_beyond_slot_mm": 2.09,
+    "stub_beyond_slot_mm": 1.5,
+    "analytic_start": {
+      "driven_l_mm": 4.63,
+      "parasitic_l_mm": 5.11,
+      "slot_l_mm": 3.3,
+      "arm_l_mm": 1.2,
+      "stub_mm": 2.09,
+      "h_par_mm": 0.813
+    },
+    "element_fence": "blind L1-L5 GND via rows on every cell boundary, 1.0 mm pitch",
     "stripline_50ohm_width_mm": 0.141,
     "stripline_ground_spacing_mm": 0.406,
     "lambda_g_stripline_mm": 9.965658738187697,
     "layer_heights_mm": {
-      "L1-L2 parasitic gap RO4003C": 0.813,
+      "L1-L2 parasitic gap RO4003C": 1.016,
       "L2-L3 driven RO4003C": 0.508,
       "L3-L4 RO4003C": 0.203,
       "L4-L5 RO4450F+RO4003C": 0.203
     },
     "embedded_pattern_model": "E-plane cos^0.9, H-plane cos^1.3 (power), 4.7 dBi RX / 5.5 dBi TX",
-    "target_bandwidth_vswr2": "15.1-16.9 GHz (11 %) incl. +/-60 deg az active-match"
+    "target_bandwidth_vswr2": "15.1-16.9 GHz (11 %) incl. +/-60 deg az active-match",
+    "em_result": "active |S11| < -10 dB over >= 0.52 GHz centred ~16.0-16.1 GHz at every scan to 60 deg az / 40 deg el / 45 deg diagonal; -5.6 to -8.6 dB at the 15.5/16.5 GHz allocation edges (covers the 250 MHz chirp anywhere in ~15.7-16.3 GHz)"
   },
   "patterns": {
     "beamwidth_az_deg": 5.75,

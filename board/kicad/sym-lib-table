@@ -1,0 +1,4 @@
+(sym_lib_table
+	(version 7)
+	(lib (name "HG1")(type "KiCad")(uri "${KIPRJMOD}/HG1.kicad_sym")(options "")(descr "HoloGuard HG-1 project symbols"))
+)

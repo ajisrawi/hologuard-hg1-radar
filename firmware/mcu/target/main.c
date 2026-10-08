@@ -10,7 +10,7 @@ void MX_GPIO_Init(void);
 void MX_DMA_Init(void);
 void MX_ADC1_Init(void);
 void MX_SPI1_Init(void);
-void MX_I2C1_Init(void);
+void MX_I2C3_Init(void);
 void MX_USART1_UART_Init(void);
 void MX_COMP1_Init(void);
 void MX_TIM1_Init(void);
@@ -30,12 +30,12 @@ void HAL_IncTick(void) {
 
 int main(void) {
     HAL_Init();
-    SystemClock_Config();          /* 170 MHz from 24 MHz HSE */
+    SystemClock_Config();          /* 170 MHz from HSI16 + PLL (PF0 used as ADC input) */
     MX_GPIO_Init();
     MX_DMA_Init();
     MX_ADC1_Init();
     MX_SPI1_Init();
-    MX_I2C1_Init();
+    MX_I2C3_Init();
     MX_USART1_UART_Init();
     MX_COMP1_Init();               /* -5 V window comparator -> TIM1 break -> drain switch off */
     MX_TIM1_Init();
